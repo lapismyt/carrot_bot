@@ -30,6 +30,8 @@ async def handle_message(message: types.Message):
             await chain.train('datasets/global_dataset.txt', weight=1)
             await chain.train(f'datasets/chat_{message.chat.id}.txt', weight=5)
             response = await chain.generate_response(message.text)
+            if response == '':
+                return None
             async with open(f'datasets/chat_{message.chat.id}.txt', 'a+') as f:
                 await f.write(f'{response}\n')
             async with open('datasets/global_dataset.txt', 'a') as f:
