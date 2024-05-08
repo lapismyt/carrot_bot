@@ -2,10 +2,10 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiofiles import open
 from aiofiles import os as aioos
-from utils import MarkovChat
 import asyncio
 import random
 import os
+import markovify
 
 bot = Bot(os.getenv('CARROT_BOT_TOKEN'))
 dp = Dispatcher()
@@ -13,24 +13,24 @@ dp = Dispatcher()
 @dp.message()
 async def handle_message(message: types.Message):
     datasets_list = await aioos.listdir('datasets')
-    if message.text is None or message.text.startswith('/'):
+    if message.text is None or message.text.startswith('/') or message.text.lower() == '@carrot_chatbot':
         return None
     if not f'chat_{message.chat.id}.txt' in datasets_list:
         async with open(f'datasets/chat_{message.chat.id}.txt', 'w') as f:
-            await f.write(f'{message.text}\n')
+            await f.write(f'{message.text.lower().replace("@carrot_chatbot", "")}\n')
         async with open('datasets/global_dataset.txt', 'a') as f:
-            await f.write(f'{message.text}\n')
+            await f.write(f'{message.text.lower().replace("@carrot_chatbot", "")}\n')
     else:
         async with open(f'datasets/chat_{message.chat.id}.txt', 'a+') as f:
-            await f.write(f'{message.text}\n')
+            await f.write(f'{message.text.lower().replace("@carrot_chatbot", "")}\n')
         async with open('datasets/global_dataset.txt', 'a') as f:
-            await f.write(f'{message.text}\n')
+            await f.write(f'{message.text.lower().replace("@carrot_chatbot", "")}\n')
         if '@carrot_chatbot' in message.text.lower() or random.randint(2, 10) == 5:
-            chain = MarkovChat()
-            await chain.train('datasets/global_dataset.txt', weight=1)
-            await chain.train(f'datasets/chat_{message.chat.id}.txt', weight=5)
-            response = await chain.generate_response(message.text)
-            if response == '':
+            async with open(f'datasets/chat_{message.chat.id}.txt') as f:
+                chain = markovify.NewlineText(await f.read())
+                query = message.text.lower().replace('@carrot_chatbot', '')
+                response = await chain.make_short_sentence(150)
+            if not response:
                 print("Empty")
                 return None
             async with open(f'datasets/chat_{message.chat.id}.txt', 'a+') as f:
