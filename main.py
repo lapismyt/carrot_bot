@@ -8,13 +8,13 @@ bot = TeleBot(os.getenv('CARROT_BOT_TOKEN'))
 global_model = None
 if os.path.exists('datasets/global.txt'):
     with open('datasets/global.txt', 'r') as f:
-        global_model = markovify.Text(f.read())
+        global_model = markovify.Text(f.read(), well_formed=False)
 
 def get_chat_model(chat_id):
     chat_file = f'datasets/chat_{chat_id}.txt'
     if os.path.exists(chat_file):
         with open(chat_file, 'r') as f:
-            chat_model = markovify.Text(f.read())
+            chat_model = markovify.Text(f.read(), well_formed=False)
         if global_model:
             chat_model = markovify.combine([chat_model, global_model], [1, 0.5])
         return chat_model
