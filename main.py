@@ -10,7 +10,7 @@ import os
 bot = Bot(os.getenv('CARROT_BOT_TOKEN'))
 dp = Dispatcher()
 
-@dp.message(chat_type=[types.ChatType.PRIVATE, types.ChatType.GROUP, types.ChatType.SUPERGROUP])
+@dp.message()
 async def handle_message(message: types.Message):
     datasets_list = await aioos.listdir('datasets')
     if message.text is None or message.text.startswith('/'):
