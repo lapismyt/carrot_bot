@@ -6,25 +6,25 @@ from aiofiles import open
 class MarkovChat:
     def __init__(self):
         self.markov_chain = defaultdict(list)
-        self.stop_token = "<|end|>"
         self.start_words = defaultdict(Counter)
+        self.max_length = 20
 
     async def train(self, filename, weight=1):
         async with open(filename) as file:
             text = (await file.read()).strip()
-            messages = text.split(self.stop_token)
+            messages = text.split("\n")  # Split messages by newline
             for i in range(len(messages) - 1):
                 await self.add_to_chain(messages[i].strip(), messages[i + 1].strip(), weight)
 
     async def add_to_chain(self, current_msg, next_msg, weight=1):
-        words = current_msg.split() + [self.stop_token]
+        words = current_msg.split()
         for i in range(len(words) - 1):
             self.markov_chain[words[i]].extend([words[i + 1]] * weight)
         
         if next_msg:
             next_msg_words = next_msg.split()
             if next_msg_words:
-                self.start_words[words[-2]].update({next_msg_words[0]: weight})
+                self.start_words[words[-1]].update({next_msg_words[0]: weight})
 
     async def generate_response(self, message):
         response = []
@@ -35,13 +35,13 @@ class MarkovChat:
             start_word = random.choice(list(self.start_words[words[-1]].elements()))
 
         word = start_word
-        while word != self.stop_token:
+        while word in self.markov_chain and len(response) < self.max_length:
             response.append(word)
             word = random.choice(self.markov_chain[word])
 
         return ' '.join(response)
 
-# Пример использования
+# Example usage
 async def main():
     bot = MarkovChat()
     await bot.train('global_dataset.txt', weight=1)
@@ -49,10 +49,10 @@ async def main():
     conversation = ''
     while True:
         query = input('Вы: ')
-        conversation = ' '.join([conversation, query, '<|end|>'])
+        conversation = ' '.join([conversation, query])
         response = await bot.generate_response(conversation)
         print('Бот:', response)
-        conversation = ' '.join([conversation, response, '<|end|>'])
+        conversation = ' '.join([conversation, response])
 
 if __name__ == '__main__':
     asyncio.run(main())

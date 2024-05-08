@@ -10,30 +10,30 @@ import os
 bot = Bot(os.getenv('CARROT_BOT_TOKEN'))
 dp = Dispatcher()
 
-@dp.message()
+@dp.message(chat_type=[types.ChatType.PRIVATE, types.ChatType.GROUP, types.ChatType.SUPERGROUP])
 async def handle_message(message: types.Message):
     datasets_list = await aioos.listdir('datasets')
-    if message.text == '/start':
+    if message.text is None or message.text.startswith('/'):
         return None
     if not f'chat_{message.chat.id}.txt' in datasets_list:
         async with open(f'datasets/chat_{message.chat.id}.txt', 'w') as f:
-            await f.write(f'{message.text} <|end|>\n')
+            await f.write(f'{message.text}\n')
         async with open('datasets/global_dataset.txt', 'a') as f:
-            await f.write(f'{message.text} <|end|>\n')
+            await f.write(f'{message.text}\n')
     else:
         async with open(f'datasets/chat_{message.chat.id}.txt', 'a+') as f:
-            await f.write(f'{message.text} <|end|>\n')
+            await f.write(f'{message.text}\n')
         async with open('datasets/global_dataset.txt', 'a') as f:
-            await f.write(f'{message.text} <|end|>\n')
+            await f.write(f'{message.text}\n')
         if '@carrot_chatbot' in message.text.lower() or random.randint(0, 10) == 5:
             chain = MarkovChat()
             await chain.train('datasets/global_dataset.txt', weight=1)
             await chain.train(f'datasets/chat_{message.chat.id}.txt', weight=5)
             response = await chain.generate_response(message.text)
             async with open(f'datasets/chat_{message.chat.id}.txt', 'a+') as f:
-                await f.write(f'{response} <|end|>\n')
+                await f.write(f'{response}\n')
             async with open('datasets/global_dataset.txt', 'a') as f:
-                await f.write(f'{response} <|end|>\n')
+                await f.write(f'{response}\n')
             await message.answer(response)
         
 
