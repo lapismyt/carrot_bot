@@ -25,12 +25,13 @@ async def handle_message(message: types.Message):
             await f.write(f'{message.text}\n')
         async with open('datasets/global_dataset.txt', 'a') as f:
             await f.write(f'{message.text}\n')
-        if '@carrot_chatbot' in message.text.lower() or random.randint(0, 10) == 5:
+        if '@carrot_chatbot' in message.text.lower() or random.randint(3, 8) == 5:
             chain = MarkovChat()
             await chain.train('datasets/global_dataset.txt', weight=1)
             await chain.train(f'datasets/chat_{message.chat.id}.txt', weight=5)
             response = await chain.generate_response(message.text)
             if response == '':
+                print("Empty")
                 return None
             async with open(f'datasets/chat_{message.chat.id}.txt', 'a+') as f:
                 await f.write(f'{response}\n')
