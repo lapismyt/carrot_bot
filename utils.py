@@ -4,20 +4,20 @@ from collections import defaultdict
 
 class MarkovChat:
     def __init__(self):
-        # Используем словарь для хранения триграмм
+        # Используем словарь для хранения биграмм
         self.markov_chain = defaultdict(lambda: defaultdict(int))
 
     async def train(self, filepath, weight=1):
         async with aiofiles.open(filepath, mode='r', encoding='utf-8') as file:
-            previous_words = (None, None)
+            previous_word = None
             async for line in file:
                 words = line.strip().split()
                 for current_word in words:
-                    if previous_words[1] is not None:
-                        self.markov_chain[previous_words][current_word] += weight
-                    previous_words = (previous_words[1], current_word)
+                    if previous_word is not None:
+                        self.markov_chain[previous_word][current_word] += weight
+                    previous_word = current_word
                 # Сбросить контекст после обработки строки
-                previous_words = (None, None)
+                previous_word = None
 
     async def generate_response(self, query):
         words = query.split()
@@ -26,20 +26,19 @@ class MarkovChat:
 
         # Начинаем ответ с последнего слова запроса, если возможно
         last_word = words[-1]
-        possible_starts = [key for key in self.markov_chain.keys() if key[1] == last_word]
-        if not possible_starts:
+        if last_word not in self.markov_chain:
             return ""
 
-        current_pair = random.choice(possible_starts)
-        response = [current_pair[0], current_pair[1]]
+        response = [last_word]
+        current_word = last_word
         
         while len(response) < 50:
-            next_words = list(self.markov_chain[current_pair].keys())
+            next_words = list(self.markov_chain[current_word].keys())
             if not next_words:
                 break
             next_word = random.choice(next_words)
             response.append(next_word)
-            current_pair = (current_pair[1], next_word)
+            current_word = next_word
 
         return ' '.join(response)
 
