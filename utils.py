@@ -22,12 +22,19 @@ class MarkovChat:
     async def generate_response(self, query):
         words = query.split()
         if not words:
-            return ""
-
-        # Начинаем ответ с последнего слова запроса, если возможно
-        last_word = words[-1]
-        if last_word not in self.markov_chain:
-            return ""
+            # Если запрос пуст, выбираем случайное начальное слово
+            all_possible_starts = list(self.markov_chain.keys())
+            if not all_possible_starts:
+                return ""
+            last_word = random.choice(all_possible_starts)
+        else:
+            last_word = words[-1]
+            if last_word not in self.markov_chain:
+                # Если последнее слово запроса не найдено, выбираем случайное слово
+                all_possible_starts = list(self.markov_chain.keys())
+                if not all_possible_starts:
+                    return ""
+                last_word = random.choice(all_possible_starts)
 
         response = [last_word]
         current_word = last_word
@@ -35,7 +42,12 @@ class MarkovChat:
         while len(response) < 50:
             next_words = list(self.markov_chain[current_word].keys())
             if not next_words:
-                break
+                # Если нет следующих слов, выбираем случайное новое начальное слово
+                all_possible_starts = list(self.markov_chain.keys())
+                if not all_possible_starts:
+                    break
+                current_word = random.choice(all_possible_starts)
+                continue
             next_word = random.choice(next_words)
             response.append(next_word)
             current_word = next_word
