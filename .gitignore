@@ -1,2 +1,2 @@
-datasets/chat_*
+datasets/*
 __pycache__
