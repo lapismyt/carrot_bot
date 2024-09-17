@@ -61,7 +61,7 @@ def message_handler(message: types.Message):
     if random.randint(1, 8) == 1 or '@carrot_chatbot' in message_text.lower():
         generated_text = generate_text(chat_id, query)
         if generated_text:
-            bot.send_message(chat_id, generated_text)
+            bot.send_message(chat_id, generated_text.replace('@', '@'))
 
 if __name__ == '__main__':
     bot.infinity_polling()
