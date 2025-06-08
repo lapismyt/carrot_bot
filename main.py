@@ -92,13 +92,24 @@ def generate_text(chat_id, init_text=None):
                 logger.info(f"Generated with start '{init_text}': {sentence}")
                 return sentence
             logger.info(f"Failed to generate with start '{init_text}', trying without")
-        
-        sentence = chat_model.make_sentence(max_words=40, tries=100)
-        if sentence:
-            logger.info(f"Generated: {sentence}")
-        else:
-            logger.warning(f"Generation failed for chat {chat_id}")
         return sentence
+    except Exception as e:
+        logger.error(f"Generation error for chat {chat_id}: {e}")
+        logger.info(f"Failed to generate with start '{init_text}', trying without")
+
+    try:
+        sentence = chat_model.make_sentence(
+            max_words=60, 
+            tries=200,
+            max_overlap_ratio=0.9,
+            max_overlap_total=30
+        )
+        if sentence:
+            logger.debug(f"Generated: {sentence}")
+            return sentence
+        else:
+            logger.warning(f"Generation failed for chat {chat_id} (returned None)")
+            return None
     except Exception as e:
         logger.error(f"Generation error for chat {chat_id}: {e}")
         return None
