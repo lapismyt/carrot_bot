@@ -105,7 +105,7 @@ def generate_text(chat_id, init_text=None):
             max_overlap_total=30
         )
         if sentence:
-            logger.debug(f"Generated: {sentence}")
+            logger.info(f"Generated: {sentence}")
             return sentence
         else:
             logger.warning(f"Generation failed for chat {chat_id} (returned None)")
