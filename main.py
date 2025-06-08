@@ -29,7 +29,6 @@ except Exception as e:
     BOT_USERNAME = "carrot_chatbot"  # fallback
     logger.warning(f"Using fallback username: @{BOT_USERNAME}")
 
-# Загрузка глобальной модели
 global_model = None
 global_dataset_path = 'datasets/global.txt'
 
@@ -84,7 +83,7 @@ def generate_text(chat_id, init_text=None):
         if init_text:
             sentence = chat_model.make_sentence_with_start(
                 init_text, 
-                max_words=40, 
+                max_words=20, 
                 tries=100,
                 strict=False
             )
@@ -99,10 +98,10 @@ def generate_text(chat_id, init_text=None):
 
     try:
         sentence = chat_model.make_sentence(
-            max_words=60, 
+            max_words=20, 
             tries=200,
             max_overlap_ratio=0.9,
-            max_overlap_total=30
+            max_overlap_total=20
         )
         if sentence:
             logger.info(f"Generated: {sentence}")
