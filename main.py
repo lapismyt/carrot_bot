@@ -61,11 +61,11 @@ def get_chat_model(chat_id):
                 return global_model
             
             chat_model = markovify.NewlineText(text, well_formed=False)
-            logger.debug(f"Chat model for {chat_id} loaded")
+            logger.info(f"Chat model for {chat_id} loaded")
             
             if global_model:
                 combined = markovify.combine([chat_model, global_model], [2, 1])
-                logger.debug(f"Models combined for chat {chat_id}")
+                logger.info(f"Models combined for chat {chat_id}")
                 return combined
             return chat_model
     except Exception as e:
@@ -73,7 +73,7 @@ def get_chat_model(chat_id):
         return global_model
 
 def generate_text(chat_id, init_text=None):
-    logger.debug(f"Generating text for chat {chat_id} with init: '{init_text}'")
+    logger.info(f"Generating text for chat {chat_id} with init: '{init_text}'")
     
     chat_model = get_chat_model(chat_id)
     if not chat_model:
@@ -89,13 +89,13 @@ def generate_text(chat_id, init_text=None):
                 strict=False
             )
             if sentence:
-                logger.debug(f"Generated with start '{init_text}': {sentence}")
+                logger.info(f"Generated with start '{init_text}': {sentence}")
                 return sentence
-            logger.debug(f"Failed to generate with start '{init_text}', trying without")
+            logger.info(f"Failed to generate with start '{init_text}', trying without")
         
         sentence = chat_model.make_sentence(max_words=40, tries=100)
         if sentence:
-            logger.debug(f"Generated: {sentence}")
+            logger.info(f"Generated: {sentence}")
         else:
             logger.warning(f"Generation failed for chat {chat_id}")
         return sentence
@@ -105,30 +105,30 @@ def generate_text(chat_id, init_text=None):
 
 def save_message(chat_id, text):
     if not text.strip():
-        logger.debug("Empty message skipped")
+        logger.info("Empty message skipped")
         return
     
-    logger.debug(f"Saving message for chat {chat_id}: '{text}'")
+    logger.info(f"Saving message for chat {chat_id}: '{text}'")
     
     chat_file = f'datasets/chat_{chat_id}.txt'
     try:
         with open(chat_file, 'a', encoding='utf-8') as f:
             f.write(text + '\n')
-        logger.debug(f"Message saved to chat {chat_id} dataset")
+        logger.info(f"Message saved to chat {chat_id} dataset")
     except Exception as e:
         logger.error(f"Error saving to chat {chat_id} dataset: {e}")
     
     try:
         with open(global_dataset_path, 'a', encoding='utf-8') as f:
             f.write(text + '\n')
-        logger.debug("Message saved to global dataset")
+        logger.info("Message saved to global dataset")
     except Exception as e:
         logger.error(f"Error saving to global dataset: {e}")
 
 @bot.message_handler(content_types=['text'])
 def handle_message(message: types.Message):
     if message.from_user.is_bot:
-        logger.debug(f"Ignored bot message from user {message.from_user.id}")
+        logger.info(f"Ignored bot message from user {message.from_user.id}")
         return
 
     chat_id = message.chat.id
@@ -140,13 +140,13 @@ def handle_message(message: types.Message):
     if BOT_USERNAME:
         bot_mention = f"@{BOT_USERNAME}".lower()
         mentioned = bot_mention in text.lower()
-        logger.debug(f"Mention check: {'found' if mentioned else 'not found'}")
+        logger.info(f"Mention check: {'found' if mentioned else 'not found'}")
 
     if text:
         save_message(chat_id, text)
     
     should_reply = mentioned or random.randint(1, 8) == 1
-    logger.debug(f"Should reply: {'yes' if should_reply else 'no'}")
+    logger.info(f"Should reply: {'yes' if should_reply else 'no'}")
 
     if should_reply:
         init_text = None
@@ -155,7 +155,7 @@ def handle_message(message: types.Message):
             words = clean_text.split()[-2:]
             if words:
                 init_text = " ".join(words)
-                logger.debug(f"Using init text: '{init_text}'")
+                logger.info(f"Using init text: '{init_text}'")
         
         generated = generate_text(chat_id, init_text)
         if generated:
