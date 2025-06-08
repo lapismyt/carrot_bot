@@ -94,7 +94,7 @@ def generate_text(chat_id, init_text=None):
             logger.info(f"Failed to generate with start '{init_text}', trying without")
         return sentence
     except Exception as e:
-        logger.error(f"Generation error for chat {chat_id}: {e}")
+        logger.error(f"Generation error for chat (+init) {chat_id}: {e}")
         logger.info(f"Failed to generate with start '{init_text}', trying without")
 
     try:
@@ -111,7 +111,7 @@ def generate_text(chat_id, init_text=None):
             logger.warning(f"Generation failed for chat {chat_id} (returned None)")
             return None
     except Exception as e:
-        logger.error(f"Generation error for chat {chat_id}: {e}")
+        logger.error(f"Generation error for chat (-init) {chat_id}: {e}")
         return None
 
 def save_message(chat_id, text):
